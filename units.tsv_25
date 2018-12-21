@@ -1,0 +1,11 @@
+sample	unit	platform	fq1	fq2
+BCC2	control	ILLUMINA	SRA/fastqs/SRR1374317_1.fastq.gz	SRA/fastqs/SRR1374317_2.fastq.gz
+BCC3	control	ILLUMINA	SRA/fastqs/SRR1374317_1.fastq.gz	SRA/fastqs/SRR1374317_2.fastq.gz
+BCC4	control	ILLUMINA	SRA/fastqs/SRR1374320_1.fastq.gz	SRA/fastqs/SRR1374320_2.fastq.gz
+BCC5	control	ILLUMINA	SRA/fastqs/SRR1374320_1.fastq.gz	SRA/fastqs/SRR1374320_2.fastq.gz
+BCC2	tumor	ILLUMINA	SRA/fastqs/SRR1374316_1.fastq.gz	SRA/fastqs/SRR1374316_2.fastq.gz
+BCC3	tumor	ILLUMINA	SRA/fastqs/SRR1374318_1.fastq.gz	SRA/fastqs/SRR1374318_2.fastq.gz
+BCC4	tumor	ILLUMINA	SRA/fastqs/SRR1374319_1.fastq.gz	SRA/fastqs/SRR1374319_2.fastq.gz
+BCC5	tumor	ILLUMINA	SRA/fastqs/SRR1374321_1.fastq.gz	SRA/fastqs/SRR1374321_2.fastq.gz
+
+
