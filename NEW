@@ -80,7 +80,7 @@ rule trim_reads_pe:
         "logs/cutadapt/{sample}.log"
     threads: 8
     wrapper:
-        "0.17.4/bio/cutadapt/pe"
+        "0.17.4/bio/cutadapt/pe" 
 
 
 #####################OK
