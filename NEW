@@ -1,0 +1,194 @@
+include: "rules/common_B.smk"
+############################
+ALL_trim_reads_pe =  expand("01.trimmed/{sample1}.1.fastq.gz", sample1 = ALL_SAMPLES)
+ALL_map_reads = expand("02.mapped/{sample1}.sorted.bam", sample1 = ALL_SAMPLES)
+ALL_mark_duplicates = expand("03.dedup/{sample1}.bam", sample1 = ALL_SAMPLES)
+ALL_recalibrate_base_qualities  = expand ("04.recal/{sample1}.bam",sample1 = ALL_SAMPLES)
+ALL_Mutect2 = []
+ALL_FilterMutectCalls = []
+
+for case in CASES:
+    print("*************new")
+    print("case:")
+    print(case)  
+    sample = "_".join(case.split("_")[0:-1])
+    control = sample + "_" + CONTROL
+    print("control:")
+    print(control)
+    print ("CONTROLS:")
+    print (CONTROLS)
+    if control in CONTROLS:
+        print("#########")
+        print("case:")
+        print(case) 
+        print("control:")
+        print(control)
+        ALL_Mutect2.append("05.vcf/1c_somatic_m2_{}_vs_{}.vcf.gz".format(case, control))
+        ALL_FilterMutectCalls.append("06.vcf/9_somatic_oncefiltered_{}_vs_{}.vcf.gz".format(case, control))
+ 
+
+ALL_GetPileupSummaries = expand ("07.table/7_tumor_getpileupsummaries.{case}.table", case = CASES)
+
+print("%%%%%%%%%%%%%%%")
+print(ALL_Mutect2)
+print(ALL_FilterMutectCalls)
+TARGETS = []
+TARGETS.extend(ALL_trim_reads_pe)
+TARGETS.extend(ALL_map_reads)
+TARGETS.extend(ALL_mark_duplicates)
+TARGETS.extend(ALL_recalibrate_base_qualities)
+TARGETS.extend(ALL_Mutect2)
+TARGETS.extend(ALL_GetPileupSummaries)
+TARGETS.extend(ALL_FilterMutectCalls)
+
+localrules: all
+rule all:
+     input: TARGETS
+
+#####################OK
+def get_fastqAAA(wildcards):
+    #sample = "-".join(wildcards.sample.split("-")[0:-1])
+    #unit = wildcards.sample.split("-")[-1]
+    #return units.loc[(sample, unit), ["fq1", "fq2"]].dropna()
+    return units.loc[("_".join(wildcards.sample.split("_")[0:-1]), wildcards.sample.split("_")[-1]), ["fq1", "fq2"]].dropna()
+
+#####################OK
+def get_read_groupAA1(wildcards):
+    """Denote sample name and platform in read group."""
+    sample_T = "_".join(wildcards.sample.split("_")[0:-1])
+    unit_T = wildcards.sample.split("_")[-1] 
+    return r"-R '@RG\tID:{sample}\tSM:{sample}\tPL:{platform}'".format(sample=wildcards.sample, platform=units.loc[(sample_T, unit_T), "platform"])
+
+
+#####################OK
+def get_trimmed_readsAA1(wildcards):
+        #paired-end sample
+        return expand("01.trimmed/{sample}.{group}.fastq.gz", group=[1, 2], **wildcards)
+
+
+######################OK
+rule trim_reads_pe:
+    input:
+        get_fastqAAA
+    output:
+        fastq1="01.trimmed/{sample}.1.fastq.gz",
+        fastq2="01.trimmed/{sample}.2.fastq.gz",
+        qc="trimmed/{sample}.qc.txt"
+    params:
+        "-a {} {}".format(config["adapter"], config["params"]["cutadapt"]["pe"])
+    log:
+        "logs/cutadapt/{sample}.log"
+    threads: 8
+    wrapper:
+        "0.17.4/bio/cutadapt/pe"
+
+
+#####################OK
+rule map_reads:
+    input:
+        reads=get_trimmed_readsAA1
+    output:
+        "02.mapped/{sample}.sorted.bam"
+    log:
+        "logs/bwa_mem/{sample}.log"
+    params:
+        index=config["ref"]["genome"],
+        extra=get_read_groupAA1,
+        sort="samtools",
+        sort_order="coordinate"
+    threads: 16
+    wrapper:
+        "0.27.1/bio/bwa/mem"
+
+
+#####################OK
+rule mark_duplicates:    
+    input:
+        "02.mapped/{sample}.sorted.bam"
+    output:
+        bam="03.dedup/{sample}.bam",
+        metrics="qc/dedup/{sample}.metrics.txt"
+    log:
+        "logs/picard/dedup/{sample}.log"
+    params:
+        config["params"]["picard"]["MarkDuplicates"]
+    threads: 8 
+    wrapper:
+        "0.26.1/bio/picard/markduplicates"
+    
+    
+###################OK
+rule recalibrate_base_qualities:
+    input:
+        bam="02.mapped/{sample}.sorted.bam" if not config["rmdup"] else "03.dedup/{sample}.bam",
+        ref=config["ref"]["genome"],
+        known=config["ref"]["known-variants"]
+    output:
+        bam=protected("04.recal/{sample}.bam")
+    params:
+        extra=config["params"]["gatk"]["BaseRecalibrator"]
+    log:
+        "logs/gatk/bqsr/{sample}.log"
+    threads: 8
+    wrapper:
+        "0.27.1/bio/gatk/baserecalibrator"
+
+
+######################
+rule Mutect2:
+    input : "04.recal/{control}.bam", "04.recal/{case}.bam"
+    output: "05.vcf/1c_somatic_m2_{case}_vs_{control}.vcf.gz", "05.vcf/2c_tumor_normal_m2_{case}_vs_{control}.bam"
+    log: "00.log/{case}_vs_{control}_m2.log"
+    params:
+            tumor = "{case}",  
+            normal = "{control}", 
+            index=config["ref"]["genome"]
+    threads : 16 
+    shell:
+        """
+        gatk --java-options "-Xmx18g" Mutect2 \
+        -R {params.index} \
+        -I {input[1]} \
+        -I {input[0]} \
+        -tumor {params.tumor} \
+        -normal {params.normal} \
+        -pon hg38/resources/somatic-hg38_1000g_pon.hg38.vcf.gz \
+        --germline-resource hg38/resources/af-only-gnomad.hg38.vcf.gz \
+        --af-of-alleles-not-in-resource 0.0000025 \
+        --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter \
+        -L hg38/beta/wholegenome.interval_list \
+        -O {output[0]} \
+        -bamout {output[1]} 2> {log}
+        """
+#######################
+rule GetPileupSummaries:
+    input : "04.recal/{case}.bam"
+    output : "07.table/7_tumor_getpileupsummaries.{case}.table", "07.table/8_tumor_calculatecontamination.{case}.table"
+    log : "00.log/{case}_GetPileupSummaries.log"
+    threads: 8
+    shell:
+       """
+        gatk GetPileupSummaries \
+        -I {input} \
+        -V hg38/resources/somatic-hg38_small_exac_common_3.hg38.vcf.gz \
+        -L hg38/beta/wholegenome.interval_list \
+        -O {output[0]}
+
+        gatk CalculateContamination \
+        -I {output[0]} \
+        -O {output[1]}       
+       """
+#######################
+
+rule FilterMutectCalls:
+   input : vcf =  "05.vcf/1c_somatic_m2_{case}_vs_{control}.vcf.gz", table =  "07.table/8_tumor_calculatecontamination.{case}.table"
+   output : "06.vcf/9_somatic_oncefiltered_{case}_vs_{control}.vcf.gz"
+   log : "00.log/9_somatic_oncefiltered_{case}_vs_{control}.log"
+   threads: 8
+   shell:
+        """
+         gatk FilterMutectCalls \
+         -V {input.vcf}  \
+         --contamination-table {input.table} \
+         -O {output} 2> {log}
+        """
