@@ -31,6 +31,11 @@ temp <- merge(temp,BCC12[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
 temp <- merge(temp,BCC13[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
 temp <- merge(temp,BCC14[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
 
-
-t(!is.na(temp[,5:9]))
-count(t(!is.na(temp[,5:9])))
+library(plyr)
+tem0<- !is.na(temp[,5:9])
+tem0.1 <-t(tem0)
+tem0.1 <- data.frame(tem0.1)
+tem2 <- ldply(tem0.1 , function(c) sum(c=="TRUE"))
+tem4 <- cbind(temp, tem2[,2])
+colnames(tem4)[10] <- "Freq"
+tem5 <- tem4[order(tem4$Freq,decreasing = TRUE),]
