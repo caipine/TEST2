@@ -1,0 +1,71 @@
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC1_tumor_vs_BCC1_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC1.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC2_tumor_vs_BCC2_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC2.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC3_tumor_vs_BCC3_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC3.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC4_tumor_vs_BCC4_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC4.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC5_tumor_vs_BCC5_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC5.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC9_tumor_vs_BCC9_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC9.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC10_tumor_vs_BCC10_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC10.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC11_tumor_vs_BCC11_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC11.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC12_tumor_vs_BCC12_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC12.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC13_tumor_vs_BCC13_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC13.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC14_tumor_vs_BCC14_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC14.txt
+
+
+cat BCC1.txt | sed -n '1!p' | sed -n '1!p'> BCC1_nohead.txt
+cat BCC2.txt | sed -n '1!p' | sed -n '1!p'> BCC2_nohead.txt
+cat BCC3.txt | sed -n '1!p' | sed -n '1!p'> BCC3_nohead.txt
+cat BCC4.txt | sed -n '1!p' | sed -n '1!p'> BCC4_nohead.txt
+cat BCC5.txt | sed -n '1!p' | sed -n '1!p'> BCC5_nohead.txt
+cat BCC9.txt | sed -n '1!p' | sed -n '1!p'> BCC9_nohead.txt
+cat BCC10.txt | sed -n '1!p' | sed -n '1!p'> BCC10_nohead.txt
+cat BCC11.txt | sed -n '1!p' | sed -n '1!p'> BCC11_nohead.txt
+cat BCC12.txt | sed -n '1!p' | sed -n '1!p'> BCC12_nohead.txt
+cat BCC13.txt | sed -n '1!p' | sed -n '1!p'> BCC13_nohead.txt
+cat BCC14.txt | sed -n '1!p' | sed -n '1!p'> BCC14_nohead.txt
+
+R
+
+BCC1 <- read.table("BCC1_nohead.txt")
+colnames(BCC1)[10] <- "BCC1"
+#BCC2 <- read.table("BCC2_nohead.txt")
+#colnames(BCC2)[10] <- "BCC2"
+BCC3 <- read.table("BCC3_nohead.txt")
+colnames(BCC3)[10] <- "BCC3"
+BCC4 <- read.table("BCC4_nohead.txt")
+colnames(BCC4)[10] <- "BCC4"
+BCC5 <- read.table("BCC5_nohead.txt")
+colnames(BCC5)[10] <- "BCC5"
+BCC9 <- read.table("BCC9_nohead.txt")
+colnames(BCC9)[10] <- "BCC9"
+BCC10 <- read.table("BCC10_nohead.txt")
+colnames(BCC10)[10] <- "BCC10"
+BCC11 <- read.table("BCC11_nohead.txt")
+colnames(BCC11)[10] <- "BCC11"
+BCC12 <- read.table("BCC12_nohead.txt")
+colnames(BCC12)[10] <- "BCC12"
+BCC13 <- read.table("BCC13_nohead.txt")
+colnames(BCC13)[10] <- "BCC13"
+BCC14 <- read.table("BCC14_nohead.txt")
+colnames(BCC14)[10] <- "BCC14"
+
+
+#temp <- merge(BCC1[,c(1:4,10)], BCC2[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE) 
+temp <- BCC1[,c(1:4,10)]
+temp <- merge(temp,BCC3[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC4[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC5[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC9[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC10[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC11[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC12[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC13[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC14[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+
+library(plyr)
+tem0<- !is.na(temp[,5:14])
+tem0.1 <-t(tem0)
+tem0.1 <- data.frame(tem0.1)
+tem2 <- ldply(tem0.1 , function(c) sum(c=="TRUE"))
+tem4 <- cbind(temp, tem2[,2])
+colnames(tem4)[15] <- "Freq"
+tem5 <- tem4[order(tem4$Freq,decreasing = TRUE),]
