@@ -1,0 +1,32 @@
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC10_tumor_vs_BCC10_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC10.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC11_tumor_vs_BCC11_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC11.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC12_tumor_vs_BCC12_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC12.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC13_tumor_vs_BCC13_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC13.txt
+bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC14_tumor_vs_BCC14_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC14.txt
+
+
+cat BCC10.txt | sed -n '1!p' | sed -n '1!p'> BCC10_nohead.txt
+cat BCC11.txt | sed -n '1!p' | sed -n '1!p'> BCC11_nohead.txt
+cat BCC12.txt | sed -n '1!p' | sed -n '1!p'> BCC12_nohead.txt
+cat BCC13.txt | sed -n '1!p' | sed -n '1!p'> BCC13_nohead.txt
+cat BCC14.txt | sed -n '1!p' | sed -n '1!p'> BCC14_nohead.txt
+
+
+R
+
+BCC10 <- read.table("BCC10_nohead.txt")
+colnames(BCC10)[10] <- "BCC10"
+BCC11 <- read.table("BCC11_nohead.txt")
+colnames(BCC11)[10] <- "BCC11"
+BCC12 <- read.table("BCC12_nohead.txt")
+colnames(BCC12)[10] <- "BCC12"
+BCC13 <- read.table("BCC13_nohead.txt")
+colnames(BCC13)[10] <- "BCC13"
+BCC14 <- read.table("BCC14_nohead.txt")
+colnames(BCC14)[10] <- "BCC14"
+
+
+temp <- merge(BCC10[,c(1:4,10)], BCC11[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE) 
+temp <- merge(temp,BCC12[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC13[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+temp <- merge(temp,BCC14[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
