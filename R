@@ -30,3 +30,7 @@ temp <- merge(BCC10[,c(1:4,10)], BCC11[,c(1:4,10)], c("V1","V2","V3","V4"),all =
 temp <- merge(temp,BCC12[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
 temp <- merge(temp,BCC13[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
 temp <- merge(temp,BCC14[,c(1:4,10)], c("V1","V2","V3","V4"),all =TRUE)
+
+
+t(!is.na(temp[,5:9]))
+count(t(!is.na(temp[,5:9])))
