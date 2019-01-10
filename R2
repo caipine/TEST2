@@ -11,17 +11,17 @@ bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC13_
 bcftools view --apply-filters PASS --output-type v 9_somatic_oncefiltered_BCC14_tumor_vs_BCC14_control.vcf.gz | rbt vcf-to-txt -g --fmt DP AD --info ANN >  BCC14.txt
 
 
-cat BCC1.txt | sed -n '1!p' | sed -n '1!p'> BCC1_nohead.txt
-cat BCC2.txt | sed -n '1!p' | sed -n '1!p'> BCC2_nohead.txt
-cat BCC3.txt | sed -n '1!p' | sed -n '1!p'> BCC3_nohead.txt
-cat BCC4.txt | sed -n '1!p' | sed -n '1!p'> BCC4_nohead.txt
-cat BCC5.txt | sed -n '1!p' | sed -n '1!p'> BCC5_nohead.txt
-cat BCC9.txt | sed -n '1!p' | sed -n '1!p'> BCC9_nohead.txt
-cat BCC10.txt | sed -n '1!p' | sed -n '1!p'> BCC10_nohead.txt
-cat BCC11.txt | sed -n '1!p' | sed -n '1!p'> BCC11_nohead.txt
-cat BCC12.txt | sed -n '1!p' | sed -n '1!p'> BCC12_nohead.txt
-cat BCC13.txt | sed -n '1!p' | sed -n '1!p'> BCC13_nohead.txt
-cat BCC14.txt | sed -n '1!p' | sed -n '1!p'> BCC14_nohead.txt
+cat BCC1.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC1_nohead.txt
+cat BCC2.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC2_nohead.txt
+cat BCC3.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC3_nohead.txt
+cat BCC4.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC4_nohead.txt
+cat BCC5.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC5_nohead.txt
+cat BCC9.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC9_nohead.txt
+cat BCC10.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC10_nohead.txt
+cat BCC11.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC11_nohead.txt
+cat BCC12.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC12_nohead.txt
+cat BCC13.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC13_nohead.txt
+cat BCC14.txt | sed -n '1!p' | sed -n '1!p' | sed 's/chr//' > BCC14_nohead.txt
 
 R
 
@@ -69,3 +69,22 @@ tem2 <- ldply(tem0.1 , function(c) sum(c=="TRUE"))
 tem4 <- cbind(temp, tem2[,2])
 colnames(tem4)[15] <- "Freq"
 tem5 <- tem4[order(tem4$Freq,decreasing = TRUE),]
+
+grch38 %>% 
+  filter(biotype=="protein_coding" & chr=="1") %>% 
+  select(ensgene, symbol, chr, start, end, description) %>% 
+  pander::pandoc.table(split.table=100, justify="llllll", style="rmarkdown")
+
+library(annotables)
+g38 <- data.frame(grch38)
+
+tem5[16:24] <- NA
+for (i in 1:nrow(tem5)) {
+    #print(i)
+tem6 <- (g38[which(((g38$chr==tem5[i,1])  & (tem5[i,2] > g38$start)) ), ])
+tem7 <- tem6[which(((tem6$chr==tem5[i,1])  & (tem5[i,2] < tem6$end)) ), ]
+tem5[i, 16:24] <- tem7[1,1:9]
+}
+
+head(tem5)
+tail(tem5)
