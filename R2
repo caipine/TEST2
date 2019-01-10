@@ -79,13 +79,19 @@ library(annotables)
 g38 <- data.frame(grch38)
 
 tem5[16:24] <- NA
-for (i in 1:nrow(tem5)) {
-    #print(i)
+#for (i in 1:nrow(tem5)) {   
+for (i in 1:1000) {   
 tem6 <- (g38[which(((g38$chr==tem5[i,1])  & (tem5[i,2] > g38$start)) ), ])
 tem7 <- tem6[which(((tem6$chr==tem5[i,1])  & (tem5[i,2] < tem6$end)) ), ]
 tem5[i, 16:24] <- tem7[1,1:9]
+
+print(i)
+print (tem7)
 tem7 <- NA
 }
 
 head(tem5)
 tail(tem5)
+
+
+
