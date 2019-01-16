@@ -79,19 +79,22 @@ library(annotables)
 g38 <- data.frame(grch38)
 
 tem5[16:24] <- NA
-#for (i in 1:nrow(tem5)) {   
-for (i in 1:1000) {   
+for (i in 1:nrow(tem5)) {
+    #print(i)
+
 tem6 <- (g38[which(((g38$chr==tem5[i,1])  & (tem5[i,2] > g38$start)) ), ])
 tem7 <- tem6[which(((tem6$chr==tem5[i,1])  & (tem5[i,2] < tem6$end)) ), ]
 tem5[i, 16:24] <- tem7[1,1:9]
-
-print(i)
-print (tem7)
 tem7 <- NA
 }
 
 head(tem5)
 tail(tem5)
+tem5[which(tem5$V18=="SMO"), ]
+tem5[which(tem5$V18=="SMO"), ][,1:23]
+colnames(tem5)[16:24] <- colnames(g38)
+colnames(tem5)[1:4] <- c("chr",	"position", "before", "after")
+tem5[5:15][is.na(tem5[5:15])] <- "-"
 
-
-
+write.table(tem5[which(tem5$symbol=="SMO"), ][,1:23], file = "2.csv", row.names= F)
+write.table(tem5, file = "1.csv", , row.names= F)
